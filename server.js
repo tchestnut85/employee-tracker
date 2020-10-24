@@ -18,14 +18,12 @@ connection.connect(err => {
 });
 
 startApp = () => {
-    inquirer.prompt([
-        {
-            type: 'list',
-            name: 'querySelect',
-            message: 'What would you like to do?',
-            choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add a Department', 'Add a Role', 'Add an Employee', 'Update an Employee Role', 'Exit App']
-        }
-    ])
+    inquirer.prompt({
+        type: 'list',
+        name: 'querySelect',
+        message: 'What would you like to do?',
+        choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add a Department', 'Add a Role', 'Add an Employee', 'Update an Employee Role', 'Exit App']
+    })
         .then((response) => {
             switch (response.querySelect) {
                 case 'View All Departments':
@@ -80,14 +78,42 @@ viewRoles = () => {
 viewEmployees = () => {
     console.log('Displaying all employee information. \n');
     connection.query(`
-                SELECT employees.id, employees.first_name, employees.last_name, roles.title, roles.salary, departments.name AS Dept_Name
-                FROM employees RIGHT JOIN roles ON employees.role_id = roles.id RIGHT JOIN departments ON roles.department_id = departments.id;`,
+                SELECT employees.id, employees.first_name, employees.last_name, roles.title,
+                roles.salary, departments.name AS Dept_Name
+                FROM employees
+                RIGHT JOIN roles ON employees.role_id = roles.id
+                RIGHT JOIN departments ON roles.department_id = departments.id;`,
+        // NEED TO ADD MANAGER NAME TO SQL QUERY
         function (err, res) {
             if (err) throw err;
             console.table(res);
             startApp();
         });
+};
+
+addDept = () => {
+    inquirer.prompt({
+        type: 'input',
+        name: 'deptName',
+        message: 'What department do you want to add?'
+    })
+        .then(response => {
+            connection.query(
+                `INSERT INTO departments SET ?`,
+                {
+                    name: response.deptName
+                },
+                (err, res) => {
+                    if (err) throw err;
+                    console.log(`\n ${res.affectedRows} department added! \n Here is the updated department list: \n`);
+                    viewDepartments();
+                }
+            );
+            startApp();
+        });
 };;
+
+
 
 // exit the app NOT WORKING ???
 // exitApp = () => connection.end();
