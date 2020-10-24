@@ -1,0 +1,31 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "Employee tracking app using MySQL",
+  "main": "script.js",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^7.3.3",
+    "mysql2": "^2.2.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tchestnut85/employee-tracker.git"
+  },
+  "keywords": [
+    "employee",
+    "tracker",
+    "sql",
+    "database"
+  ],
+  "author": "Tom Chestnut",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tchestnut85/employee-tracker/issues"
+  },
+  "homepage": "https://github.com/tchestnut85/employee-tracker#readme"
+}
