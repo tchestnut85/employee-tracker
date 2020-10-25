@@ -1,6 +1,7 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
+const names = [];
 
 // create the connection to database
 const connection = mysql.createConnection({
@@ -20,7 +21,7 @@ connection.connect(err => {
 // Welcome function
 welcomePrompt = () => {
     console.log(
-        '-------------------------------- \n Welcome to the Employee Tracker app! \n-------------------------------- \n');
+        '------------------------------------------- \n Welcome to the Employee Tracker app! \n------------------------------------------- \n');
     startApp();
 };
 
@@ -52,11 +53,16 @@ startApp = () => {
                 case 'Add an Employee':
                     addEmployee();
                     break;
-                case 'Update an Employee':
+                case 'Update an Employee Role':
                     updateEmployee();
                     break;
+                // case 'Delete an Employee':
+                //     deleteEmployee();
+                //     break;
                 case 'Exit the App':
-                    connection.end();
+                    exitApp();
+                    break;
+                // connection.end();
             }
         });
 };
@@ -75,9 +81,9 @@ viewDepartments = () => {
 viewRoles = () => {
     console.log('Displaying all employee roles. \n');
     connection.query(`SELECT roles.id AS Role_ID, roles.title AS Title, roles.salary, departments.name AS department_name
-                    FROM roles
-                    LEFT JOIN departments 
-                    ON roles.department_id = departments.id;`,
+            FROM roles 
+            LEFT JOIN departments
+            ON roles.department_id = departments.id;`,
         function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -89,12 +95,13 @@ viewRoles = () => {
 viewEmployees = () => {
     console.log('Displaying all employee information. \n');
     connection.query(`
-                SELECT employees.id, employees.first_name, employees.last_name, roles.title,
-                roles.salary, departments.name AS Dept_Name
-                FROM employees
-                RIGHT JOIN roles ON employees.role_id = roles.id
-                RIGHT JOIN departments ON roles.department_id = departments.id;`,
-        // NEED TO ADD MANAGER NAME TO SQL QUERY
+            SELECT employees.id, employees.first_name, employees.last_name, roles.title,
+                roles.salary, departments.name AS Dept_Name, employees.manager_id AS Manager
+            FROM employees
+            RIGHT JOIN roles ON employees.role_id = roles.id
+            RIGHT JOIN departments ON roles.department_id = departments.id
+            ORDER BY employees.id;`,
+
         function (err, res) {
             if (err) throw err;
             console.table(res);
@@ -111,19 +118,19 @@ addDept = () => {
     })
         .then(response => {
             connection.query(
-                `INSERT INTO departments SET ?`,
+                `INSERT INTO departments SET ? `,
                 {
                     name: response.deptName
                 },
                 (err, res) => {
                     if (err) throw err;
-                    console.log(`\n ${res.affectedRows} department added! \n Here is the updated department list: \n`);
+                    console.log(`\n ${response.deptName} department added! \n Here is the updated department list: \n`);
                     viewDepartments();
                 }
             );
             startApp();
         });
-};;
+};
 
 // Add a new role/position
 addRole = () => {
@@ -131,47 +138,22 @@ addRole = () => {
         {
             type: 'input',
             name: 'roleName',
-            message: 'What is the name of the position?',
-            validate: (roleResponse) => {
-                if (roleResponse) {
-                    return true;
-                } else {
-                    console.log('You must enter a name for the new position.');
-                    return false;
-                }
-            }
+            message: 'What is the name of the position?'
         },
         {
             type: 'number',
             name: 'salary',
-            message: "What is this position's salary?",
-            validate: (salaryResponse) => {
-                if (salaryResponse >= 10000) {
-                    return true;
-                } else {
-                    console.log('You must enter a valid salary.');
-                    return false;
-                }
-            }
+            message: "What is this position's salary?"
         },
         {
             type: 'number',
             name: 'dept',
-            message: 'Which Department ID is this position in?',
-            validate: (deptResponse) => {
-                if (!deptResponse) {
-                    console.log('You must enter a valid salary.');
-                    return false;
-                } else {
-                    return true;
-                }
-            }
+            message: 'Which Department ID is this position in?'
         }
     ])
         .then(response => {
             console.log(response);
-            // connection.query(`INSERT INTO roles SET (?, ?, ?)`,
-            connection.query(`INSERT INTO roles SET ?`,
+            connection.query(`INSERT INTO roles SET ? `,
                 {
                     title: response.roleName,
                     salary: response.salary,
@@ -179,7 +161,7 @@ addRole = () => {
                 },
                 (err, res) => {
                     if (err) throw err;
-                    console.log(`\n ========== ${response.roleName} role added! ========== \n Here is the updated role list: \n`);
+                    console.log(`========== \n ${response.roleName} role added! \n ========== \n Here is the updated role list: \n`);
                     viewRoles();
                 }
             );
@@ -193,96 +175,113 @@ addEmployee = () => {
         {
             type: 'input',
             name: 'empFirstName',
-            message: 'What is the first name of the new employee?',
-            validate: (firstName) => {
-                if (firstName) {
-                    return true;
-                } else {
-                    console.log('You must enter the first name of the new employee.');
-                    return false;
-                }
-            }
+            message: 'What is the first name of the new employee?'
         },
         {
             type: 'input',
             name: 'empLastName',
-            message: 'What is the last name of the new employee?',
-            validate: (lastName) => {
-                if (lastName) {
-                    return true;
-                } else {
-                    console.log('You must enter the last name of the new employee.');
-                    return false;
-                }
-            }
+            message: 'What is the last name of the new employee?'
         },
         {
-            type: 'input',
+            type: 'number',
             name: 'empRole',
-            message: 'What is the role of the new employee?',
-            validate: (roleResponse) => {
-                if (roleResponse) {
-                    return true;
-                } else {
-                    console.log('You must enter the last name of the new employee.');
-                    return false;
-                }
-            }
+            message: 'Input the ID number of the role for the new employee: \n 1: EHS Associate \n 3: Research Scientist \n 5: Process Scientist \n 7: Ops Associate \n 9: Salesperson \n'
         },
         {
-            type: 'list',
+            type: 'number',
             name: 'empManager',
-            message: 'Who is the manager of the new employee?',
-            choices: [],
-            validate: (mgrResponse) => {
-                if (mgrResponse) {
-                    return true;
-                } else {
-                    console.log('You must enter the last name of the new employee.');
-                    return false;
+            message: 'Enter the ID number of the manager for the new employee: \n 3: Ginadura Belvani \n 6: Ekhi Bjadsen \n 9: Sulesa Melarg \n 12: Rianis River \n 15: Gandela Saram \n'
+        }
+    ])
+        .then((response) => {
+            connection.query(`INSERT INTO employees SET ?`,
+                {
+                    first_name: response.empFirstName,
+                    last_name: response.empLastName,
+                    role_id: response.empRole,
+                    manager_id: response.empManager
+                },
+                (err, res) => {
+                    if (err) throw err;
+                    console.log(`\n ${response.empFirstName} ${response.empLastName} added! \n Here is the updated employee list: \n`);
+                    viewEmployees();
                 }
-            }
-        }
-    ]);
-    connection.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`,
-        {
-            first_name: response.empFirstName,
-            last_name: response.empLastName,
-            role_id: response.empRole,
-            manager_id: response.empManager
-        },
-        (err, res) => {
-            if (err) throw err;
-            console.log(`\n ${response.empFirstName} ${response.empLastName} added! \n Here is the updated employee list: \n`);
-            viewEmployees();
-        }
-    );
-    startApp();
+            );
+            startApp();
+        });
 };
 
 // Update an employee's role
 updateEmployee = () => {
-    inquirer.prompt([
-        {
-            type: 'choice',
-            name: 'roleUpdate',
-            message: 'Which employee do you want to update a role for?',
-            choices: []
-        }
-    ]);
-    connection.query(`UPDATE employees SET role_id VALUES (?)`,
-        {
-            role_id: response.empRole
-        },
-        (err, res) => {
+    connection.query(`SELECT CONCAT(employees.first_name, " ", employees.last_name) AS Employee_Name FROM employees;`,
+        function (err, res) {
             if (err) throw err;
-            console.log(`\n ${response.empFirstName} ${response.empLastName} added! \n Here is the updated employee list: \n`);
-            viewEmployees();
-        }
-    );
-    startApp();
-};;
 
+            for (let i = 0; i < res.length; i++) {
+                let name = res[i].Employee_Name;
+                names.push(name);
+            }
 
-// exit the app NOT WORKING ???
-// exitApp = () => connection.end();
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'selectedEmp',
+                    message: 'Which employee do you want to update a role for?',
+                    choices: names
+                }
+            ])
+                .then((response) => {
+                    let selectedEmp = response;
+
+                    inquirer.prompt({
+                        type: 'input',
+                        name: 'empRoleUpdate',
+                        message: `What is the new role for this employee?`
+                    })
+                        .then(
+                            connection.query(`UPDATE employees SET role_id VALUES ? WHERE CONCAT(employees.first_name, " ", employees.last_name) = ${selectedEmp}; `,
+                                {
+                                    role_id: response.empRole
+                                },
+                                (err, res) => {
+                                    if (err) throw err;
+                                    console.log(`\n ${selectedEmp} 's role updated! \n`);;
+                                },
+                                startApp()
+                            )
+                        );
+                });
+        });
+};
+
+// Delete an employee - optional
+// deleteEmployee = () => {
+//     connection.query(`SELECT id, first_name, last_name FROM employees;`,
+//         (err, res) => {
+//             if (err) throw err;
+//             console.table(res);
+//         })
+//         .then(
+//             inquirer.prompt([
+//                 {
+//                     type: 'number',
+//                     name: 'deleteEmp',
+//                     message: 'Input the ID of the employee listed above that you want to delete. \n'
+//                 }
+//             ]))
+//         .then((deleteEmp) => {
+//             connection.query(`DELETE FROM employees WHERE ?;`,
+//                 {
+//                     id: deleteEmp.id
+//                 },
+//                 (err, res) => {
+//                     if (err) throw err;
+//                     console.log(`\n ========== Employee deleted! ========== \n`);
+//                 }
+//             );
+//             startApp();
+//         });
+// };
+
+// exit the app
+exitApp = () => connection.end();
