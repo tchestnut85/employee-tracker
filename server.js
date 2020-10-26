@@ -231,7 +231,7 @@ updateEmployee = () => {
             ])
                 .then((response) => {
                     let employee = response.selectedEmp;
-                    console.log('line 231', employee);
+                    // console.log('line 231', employee);
 
                     connection.query(`SELECT roles.title AS Role_Title FROM roles`,
                         function (err, res) {
@@ -241,20 +241,21 @@ updateEmployee = () => {
                                 let role = res[i].Role_Title;
                                 roles.push(role);
                             }
-                            console.log('role index 1', roles[1]);
-                            console.log("roles:", roles);
+                            // console.log('role index 1', roles[1]);
+                            // console.log("roles:", roles);
 
                             inquirer.prompt({
                                 type: 'list',
                                 name: 'empRoleUpdate',
                                 message: 'What is the new role for this employee?',
-                                choice: roles
+                                choices: roles
                             }
                             );
                         })
                         .then((response) => {
                             let roleName = response.empRoleUpdate;
-                            connection.query(`UPDATE employees SET role_id ? WHERE CONCAT(employees.first_name, " ", employees.last_name) = ${employee}; `,
+                            console.log('selected role:', roleName);
+                            connection.query(`UPDATE employees SET ? WHERE CONCAT(employees.first_name, " ", employees.last_name) = ${employee}; `,
                                 {
                                     role_id: roleName + 1
                                 },
