@@ -244,29 +244,31 @@ updateEmployee = () => {
                             // console.log('role index 1', roles[1]);
                             // console.log("roles:", roles);
 
-                            inquirer.prompt({
-                                type: 'list',
-                                name: 'empRoleUpdate',
-                                message: 'What is the new role for this employee?',
-                                choices: roles
-                            }
-                            );
-                        })
-                        .then((response) => {
-                            let roleName = response.empRoleUpdate;
-                            console.log('selected role:', roleName);
-                            connection.query(`UPDATE employees SET ? WHERE CONCAT(employees.first_name, " ", employees.last_name) = ${employee}; `,
+                            inquirer.prompt([
                                 {
-                                    role_id: roleName + 1
-                                },
-                                (err, res) => {
-                                    if (err) throw err;
-                                    console.log(`\n ${employee}'s role updated! \n`);
-                                    startApp();
+                                    type: 'list',
+                                    name: 'empRoleUpdate',
+                                    message: 'What is the new role for this employee?',
+                                    choices: roles
                                 }
-                            );
-                        }
-                        );
+                            ])
+                                .then((response) => {
+                                    let roleName = response.empRoleUpdate;
+                                    console.log('\n selected role:', roleName);
+                                    connection.query(`UPDATE employees SET ? WHERE CONCAT(employees.first_name, " ", employees.last_name) = ${employee}; `,
+                                        {
+                                            role_id: roles.indexOf(roleName) + 1
+                                        },
+
+                                        (err, res) => {
+                                            if (err) throw err;
+                                            console.log(`\n ${employee}'s role updated! \n`);
+                                            startApp();
+                                        }
+                                    );
+                                }
+                                );
+                        });
                 });
         });
 };
