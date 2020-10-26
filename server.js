@@ -2,6 +2,7 @@ const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const names = [];
+const roles = [];
 
 // create the connection to database
 const connection = mysql.createConnection({
@@ -124,11 +125,10 @@ addDept = () => {
                 },
                 (err, res) => {
                     if (err) throw err;
-                    console.log(`\n ${response.deptName} department added! \n Here is the updated department list: \n`);
-                    viewDepartments();
+                    console.log(`\n =========================== \n ${response.deptName} department added! \n =========================== \n`);
+                    startApp();
                 }
             );
-            startApp();
         });
 };
 
@@ -152,7 +152,6 @@ addRole = () => {
         }
     ])
         .then(response => {
-            console.log(response);
             connection.query(`INSERT INTO roles SET ? `,
                 {
                     title: response.roleName,
@@ -161,11 +160,10 @@ addRole = () => {
                 },
                 (err, res) => {
                     if (err) throw err;
-                    console.log(`========== \n ${response.roleName} role added! \n ========== \n Here is the updated role list: \n`);
-                    viewRoles();
+                    console.log(`\n =========================== \n ${response.roleName} role added! \n =========================== \n`);
+                    startApp();
                 }
             );
-            startApp();
         });
 };;
 
@@ -203,13 +201,14 @@ addEmployee = () => {
                 },
                 (err, res) => {
                     if (err) throw err;
-                    console.log(`\n ${response.empFirstName} ${response.empLastName} added! \n Here is the updated employee list: \n`);
-                    viewEmployees();
+                    console.log(`\n ${response.empFirstName} ${response.empLastName} added! \n`);
+                    startApp();
                 }
             );
-            startApp();
         });
 };
+
+
 
 // Update an employee's role
 updateEmployee = () => {
@@ -231,24 +230,41 @@ updateEmployee = () => {
                 }
             ])
                 .then((response) => {
-                    let selectedEmp = response;
+                    let employee = response.selectedEmp;
+                    console.log('line 231', employee);
 
-                    inquirer.prompt({
-                        type: 'input',
-                        name: 'empRoleUpdate',
-                        message: `What is the new role for this employee?`
-                    })
-                        .then(
-                            connection.query(`UPDATE employees SET role_id VALUES ? WHERE CONCAT(employees.first_name, " ", employees.last_name) = ${selectedEmp}; `,
+                    connection.query(`SELECT roles.title AS Role_Title FROM roles`,
+                        function (err, res) {
+                            if (err) throw err;
+
+                            for (let i = 0; i < res.length; i++) {
+                                let role = res[i].Role_Title;
+                                roles.push(role);
+                            }
+                            console.log('role index 1', roles[1]);
+                            console.log("roles:", roles);
+
+                            inquirer.prompt({
+                                type: 'list',
+                                name: 'empRoleUpdate',
+                                message: 'What is the new role for this employee?',
+                                choice: roles
+                            }
+                            );
+                        })
+                        .then((response) => {
+                            let roleName = response.empRoleUpdate;
+                            connection.query(`UPDATE employees SET role_id ? WHERE CONCAT(employees.first_name, " ", employees.last_name) = ${employee}; `,
                                 {
-                                    role_id: response.empRole
+                                    role_id: roleName + 1
                                 },
                                 (err, res) => {
                                     if (err) throw err;
-                                    console.log(`\n ${selectedEmp} 's role updated! \n`);;
-                                },
-                                startApp()
-                            )
+                                    console.log(`\n ${employee}'s role updated! \n`);
+                                    startApp();
+                                }
+                            );
+                        }
                         );
                 });
         });
