@@ -33,7 +33,7 @@
 
   ## Links
   - **[GitHub Repo](https://github.com/tchestnut85/employee-tracker/)**
-  - **[Video Walkthrough]()**
+  - **[Video Walkthrough](https://drive.google.com/file/d/1-Ckfl2VDIUkrbM6R1lzqzx589zj3JhN2/view?usp=sharing)**
 
   ## License
   ![License](https://img.shields.io/badge/License%3A-MIT-green.svg)
