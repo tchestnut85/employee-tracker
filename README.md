@@ -3,7 +3,9 @@
   ![License](https://img.shields.io/badge/License%3A-MIT-green.svg)
 
   ## Description
-  This is a command line application using a SQL database to create, read, update and delete employee data.
+  Employee Tracker is a Node command line application using a SQL database to view and manage employee data using CRUD methods. You can view and change data for employees, roles and departments.
+  
+  This app was created using MySQL for the SQL database and Inquirer to prompt questions in the command line.
 
   #### Screenshots of the app:
 
@@ -11,16 +13,30 @@
 
   ![screenshot-2](./assets/images/screenshot-2.JPG)
 
-  ## Table of Contents 
+  ## Table of Contents
+  - [Installation](#installation)
   - [Usage](#usage)
   - [Tech Used](#tech-used)
   - [Questions](#questions)
   - [Links](#links)
   - [License](#license) 
   
+  ## Installation
+  - Both Node.js and MySQL must be installed on your computer.
+  - Clone the repo by copying and pasting in your command line: 
+    - `git clone git@github.com:tchestnut85/employee-tracker.git`
+  - Navigate to the root directory and run: 
+    - `npm install`
+  - To start the app, in the command line run: 
+    - `npm start`
+  - The Employee Tracker app is ready to go!
+  
   ## Usage
-  - Answer the questions when prompted in the command line.
-  - Choose an option to either view employee information or to add a new employee, role or department.
+  - To start the app, run: 
+    - `npm start`
+  - Use the up/down arrow keys to choose an option to view or change employee, role or department data.
+  - If choosing to update something, answer the questions by typin directly into the command line then pressing the `enter` key.
+  - After selecting an option or answering questions to update data, the selected table will be displayed in the command line.
 
   ## Tech Used
   - Node.js
